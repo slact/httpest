@@ -84,6 +84,7 @@ function register_client(s, receive, send, close)
 		s=s.socket
 	end
 	if type(s)~="userdata" then return nil, "invalid socket: " .. tostring(socket) end
+	s:settimeout(0, 't')
 	if receive then
 		receive_handlers[s]=receive
 		recvt:insert(s)
@@ -148,9 +149,9 @@ end
 
 function step(select_timeout) --do one select() iteration. return true
 	--print("recvt:", #recvt, "sendt:", #sendt)
-	local readable, writeable, select_err = socket.select(recvt, sendt, select_timeout)
-	
+	local readable, writeable, select_err = socket.select(recvt, sendt, select_timeout/1000)
 	for i, sock in ipairs(readable) do
+		
 		if receive_handlers[sock] then
 			local res, err = receive_handlers[sock](sock)
 			if err=="closed" then
